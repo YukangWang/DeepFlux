@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
   string net_file = argv[1];
   string weight_file = argv[2];
 
-//  Caffe::SetDevice(0);
-  Caffe::set_mode(Caffe::CPU);
+  Caffe::SetDevice(0);
+  Caffe::set_mode(Caffe::GPU);
 
   shared_ptr<Net<float> > net_;
   net_.reset(new Net<float>(net_file, TEST));
