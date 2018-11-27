@@ -1,9 +1,9 @@
 layer {
-  name: "data"
+  name: "image"
   type: "Python"
-  top: "data"
-  top: "label"
-  top: "weight"
+  top: "image"
+  top: "flux"
+  top: "dilmask"
   python_param {
     module: "pylayerUtils"
     layer: "DataLayer"
@@ -13,7 +13,7 @@ layer {
 layer {
   name: "conv1_1"
   type: "Convolution"
-  bottom: "data"
+  bottom: "image"
   top: "conv1_1"
   param {
     lr_mult: 1.0
@@ -953,7 +953,7 @@ layer {
   name: "fcrop"
   type: "Crop"
   bottom: "fup"
-  bottom: "data"
+  bottom: "image"
   top: "fcrop"
   crop_param {
     axis: 2
@@ -964,8 +964,8 @@ layer {
   name: "loss"
   type: "Python"
   bottom: "fcrop"
-  bottom: "label"
-  bottom: "weight"
+  bottom: "flux"
+  bottom: "dilmask"
   top: "loss"
   loss_weight: 1.0
   python_param {

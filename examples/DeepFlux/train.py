@@ -67,9 +67,9 @@ def write_net(dataset):
     """
     net = caffe.NetSpec()
     datalayer_params = dict(data_dir='/home/wangyukang/dataset/', dataset=dataset, seed=123, mean=(103.939, 116.779, 123.68))
-    net.data, net.label, net.weight = caffe.layers.Python(module='pylayerUtils', layer='DataLayer', ntop=3, param_str=str(datalayer_params))
+    net.image, net.flux, net.dilmask = caffe.layers.Python(module='pylayerUtils', layer='DataLayer', ntop=3, param_str=str(datalayer_params))
 
-    net.conv1_1, net.relu1_1 = conv_relu(net.data, 64, pad=35)
+    net.conv1_1, net.relu1_1 = conv_relu(net.image, 64, pad=35)
     net.conv1_2, net.relu1_2 = conv_relu(net.relu1_1, 64)
     net.pool1 = max_pool(net.relu1_2)
 
@@ -135,8 +135,8 @@ def write_net(dataset):
         param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
 
     net.fup = caffe.layers.Deconvolution(net.fconv3,convolution_param=dict(num_output=2, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
-    net.fcrop = crop(net.fup, net.data)
-    net.loss = caffe.layers.Python(net.fcrop, net.label, net.weight, module='pylayerUtils', layer='WeightedEuclideanLossLayer', loss_weight=1)
+    net.fcrop = crop(net.fup, net.image)
+    net.loss = caffe.layers.Python(net.fcrop, net.flux, net.dilmask, module='pylayerUtils', layer='WeightedEuclideanLossLayer', loss_weight=1)
 
     with open('train.prototxt', 'w') as f:
         f.write(str(net.to_proto()))
