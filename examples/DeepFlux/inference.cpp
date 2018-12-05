@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 #include <iostream>
+#include <time.h>
 
 #define PI 3.14159265
 
@@ -20,8 +21,8 @@ using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv) {
-  if (argc != 8) {
-    cerr << "Usage: " << argv[0] << " deploy.prototxt network.caffemodel input thr dks eks output" << endl;
+  if (argc != 9) {
+    cerr << "Usage: " << argv[0] << " deploy.prototxt network.caffemodel gpu input thr dks eks output" << endl;
     return 1;
   }
 
@@ -30,18 +31,19 @@ int main(int argc, char** argv) {
   string net_file = argv[1];
   string weight_file = argv[2];
 
-  Caffe::SetDevice(0);
+  Caffe::SetDevice(atoi(argv[3]));
   Caffe::set_mode(Caffe::GPU);
 
   shared_ptr<Net<float> > net_;
   net_.reset(new Net<float>(net_file, TEST));
   net_->CopyTrainedLayersFrom(weight_file);
 
-  string input_dir = argv[3];
+  string input_dir = argv[4];
   string input_file = input_dir+"*.jpg";
   vector<String> fn;
   glob(input_file, fn, false);
   int fn_count = fn.size();
+  clock_t start_time = clock();
   for (int idx = 0; idx < fn_count; idx++) {
     cout << fn[idx] << endl;
 //    cout << fn[idx].substr(fn[i].rfind("/")+1) << endl;
@@ -53,7 +55,7 @@ int main(int argc, char** argv) {
     Blob<float>* input_layer = net_->input_blobs()[0];
     input_layer->Reshape(1, channel, height, width);
     net_->Reshape();
-    cout << input_layer->height() << input_layer->width() << input_layer->channels() << endl;
+//    cout << input_layer->height() << input_layer->width() << input_layer->channels() << endl;
   
     float* input_data = input_layer->mutable_cpu_data();
     vector<Mat> input_channels;
@@ -73,14 +75,14 @@ int main(int argc, char** argv) {
   
     Blob<float>* output_layer = net_->output_blobs()[0];
     float* output_data = output_layer->mutable_cpu_data();
-    cout << output_layer->height() << output_layer->width() << output_layer->channels() << endl;
+//    cout << output_layer->height() << output_layer->width() << output_layer->channels() << endl;
     Mat predx(height, width, CV_32FC1, output_data);
     output_data += height * width;
     Mat predy(height, width, CV_32FC1, output_data);
   
-    float thr = atof(argv[4]);
-    int dks = atoi(argv[5]);
-    int eks = atoi(argv[6]);
+    float thr = atof(argv[5]);
+    int dks = atoi(argv[6]);
+    int eks = atoi(argv[7]);
     Mat magnitude(height, width, CV_32FC1);
     Mat angle(height, width, CV_32FC1);
     Mat mask(height, width, CV_32FC1);
@@ -182,11 +184,13 @@ int main(int argc, char** argv) {
     vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(2);
-    string output_dir = argv[7];
+    string output_dir = argv[8];
     string output_fn = output_dir+fn[idx].substr(0,fn[idx].length()-4).substr(fn[idx].rfind("/")+1)+".png";
-    cout << output_fn << endl;
+//    cout << output_fn << endl;
     imwrite(output_fn, 255*prob, compression_params);
   }
+  clock_t end_time = clock();
+  cout<<"-----Runtime: "<<static_cast<float>(end_time - start_time)/CLOCKS_PER_SEC/fn_count<<" s/image-----"<<endl;
 }
 
 #else
