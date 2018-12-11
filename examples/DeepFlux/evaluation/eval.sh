@@ -22,6 +22,13 @@ else
     mkdir $detDir
 fi
 
+if [ -d results ]
+then
+    rm results/*
+else
+    mkdir results
+fi
+
 # apply post-processing
 $buildDir/inference.bin $deploy $model $gpu $imageDir/ $thr $dks $eks $detDir/
 
