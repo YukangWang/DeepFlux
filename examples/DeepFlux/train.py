@@ -66,7 +66,7 @@ def write_net(dataset):
     Dataset: 'sklarge' for SK-LARGE; 'sk506' for SK506; 'whsymmax' for wh-SYMMAX; 'sympascal' for SYM-PASCAL; 'symmax300' for SYMMAX300.
     """
     net = caffe.NetSpec()
-    datalayer_params = dict(data_dir='/home/wangyukang/dataset/', dataset=dataset, seed=123, mean=(103.939, 116.779, 123.68))
+    datalayer_params = dict(data_dir='../../data/', dataset=dataset, seed=123, mean=(103.939, 116.779, 123.68))
     net.image, net.flux, net.dilmask = caffe.layers.Python(module='pylayerUtils', layer='DataLayer', ntop=3, param_str=str(datalayer_params))
 
     net.conv1_1, net.relu1_1 = conv_relu(net.image, 64, pad=35)
@@ -273,8 +273,6 @@ if __name__ == '__main__':
         os.makedirs('snapshot_1e-4')
     if not os.path.isdir('snapshot_1e-5'):
         os.makedirs('snapshot_1e-5')
-    if not os.path.isdir('test'):
-        os.makedirs('test')
 
     write_net(args.dataset)
     write_solver(1e-4, 80000, 'snapshot_1e-4/'+args.dataset)

@@ -22,15 +22,15 @@ class DataLayer(caffe.Layer):
 
         # read filename list for each dataset here
         if self.dataset == 'sklarge':
-            self.fnLst = open(self.data_dir+'symmetry_detection/SK-LARGE/aug_data/train_pair.lst').readlines()
+            self.fnLst = open(self.data_dir+'SK-LARGE/aug_data/train_pair.lst').readlines()
         elif self.dataset == 'sk506':
-            self.fnLst = open(self.data_dir+'symmetry_detection/SK506/aug_data/train_pair.lst').readlines()
+            self.fnLst = open(self.data_dir+'SK506/aug_data/train_pair.lst').readlines()
         elif self.dataset == 'whsymmax':
-            self.fnLst = open(self.data_dir+'symmetry_detection/wh-symmax/aug_data/train_pair.lst').readlines()
+            self.fnLst = open(self.data_dir+'wh-symmax/aug_data/train_pair.lst').readlines()
         elif self.dataset == 'sympascal':
-            self.fnLst = open(self.data_dir+'symmetry_detection/SymPASCAL-by-KZ/aug_data/train_pair.lst').readlines()
+            self.fnLst = open(self.data_dir+'SymPASCAL-by-KZ/aug_data/train_pair.lst').readlines()
         elif self.dataset == 'symmax300':
-            self.fnLst = open(self.data_dir+'symmetry_detection/SYMMAX300/aug_data/train_pair.lst').readlines()
+            self.fnLst = open(self.data_dir+'SYMMAX300/aug_data/train_pair.lst').readlines()
         else:
             raise Exception("Invalid dataset.")
 
@@ -79,8 +79,8 @@ class DataLayer(caffe.Layer):
 
     def loadsklarge(self, imgidx, gtidx):
         # load image and skeleton
-        image = cv2.imread('{}/symmetry_detection/SK-LARGE/{}'.format(self.data_dir, imgidx),1)
-        skeleton = cv2.imread('{}/symmetry_detection/SK-LARGE/{}'.format(self.data_dir, gtidx),0)
+        image = cv2.imread('{}/SK-LARGE/{}'.format(self.data_dir, imgidx),1)
+        skeleton = cv2.imread('{}/SK-LARGE/{}'.format(self.data_dir, gtidx),0)
         skeleton = (skeleton > 0).astype(np.uint8)
 
         # normalization
@@ -129,8 +129,8 @@ class DataLayer(caffe.Layer):
 
     def loadsk506(self, imgidx, gtidx):
         # load image and skeleton
-        image = cv2.imread('{}/symmetry_detection/SK506/{}'.format(self.data_dir, imgidx),1)
-        skeleton = cv2.imread('{}/symmetry_detection/SK506/{}'.format(self.data_dir, gtidx),0)
+        image = cv2.imread('{}/SK506/{}'.format(self.data_dir, imgidx),1)
+        skeleton = cv2.imread('{}/SK506/{}'.format(self.data_dir, gtidx),0)
         skeleton = (skeleton > 0).astype(np.uint8)
 
         # normalization
@@ -179,8 +179,8 @@ class DataLayer(caffe.Layer):
 
     def loadwhsymmax(self, imgidx, gtidx):
         # load image and skeleton
-        image = cv2.imread('{}/symmetry_detection/wh-symmax/{}'.format(self.data_dir, imgidx),1)
-        skeleton = cv2.imread('{}/symmetry_detection/wh-symmax/{}'.format(self.data_dir, gtidx),0)
+        image = cv2.imread('{}/wh-symmax/{}'.format(self.data_dir, imgidx),1)
+        skeleton = cv2.imread('{}/wh-symmax/{}'.format(self.data_dir, gtidx),0)
         skeleton = (skeleton > 0).astype(np.uint8)
 
         # normalization
@@ -229,8 +229,8 @@ class DataLayer(caffe.Layer):
 
     def loadsympascal(self, imgidx, gtidx):
         # load image and skeleton
-        image = cv2.imread('{}/symmetry_detection/SymPASCAL-by-KZ/{}'.format(self.data_dir, imgidx),1)
-        skeleton = cv2.imread('{}/symmetry_detection/SymPASCAL-by-KZ/{}'.format(self.data_dir, gtidx),0)
+        image = cv2.imread('{}/SymPASCAL-by-KZ/{}'.format(self.data_dir, imgidx),1)
+        skeleton = cv2.imread('{}/SymPASCAL-by-KZ/{}'.format(self.data_dir, gtidx),0)
         skeleton = (skeleton > 0).astype(np.uint8)
 
         # normalization
@@ -279,8 +279,8 @@ class DataLayer(caffe.Layer):
 
     def loadsymmax300(self, imgidx, gtidx):
         # load image and skeleton
-        image = cv2.imread('{}/symmetry_detection/SYMMAX300/{}'.format(self.data_dir, imgidx),1)
-        skeleton = cv2.imread('{}/symmetry_detection/SYMMAX300/{}'.format(self.data_dir, gtidx),0)
+        image = cv2.imread('{}/SYMMAX300/{}'.format(self.data_dir, imgidx),1)
+        skeleton = cv2.imread('{}/SYMMAX300/{}'.format(self.data_dir, gtidx),0)
         skeleton = (skeleton > 0).astype(np.uint8)
 
         # normalization
