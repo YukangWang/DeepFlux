@@ -1,5 +1,4 @@
 # dir setting
-buildDir='../../../build/examples/DeepFlux'
 imageDir=${1}
 gtDir=${2}
 detDir='det'
@@ -29,8 +28,8 @@ else
     mkdir results
 fi
 
-# apply post-processing
-$buildDir/inference.bin $deploy $model $gpu $imageDir/ $lambda $dks $eks $detDir/
+# inference
+python ../inference.py $deploy $model $gpu $imageDir/ $thr $dks $eks $detDir/
 
 # uncomment for the all-zeros case
 # python avoid_all_zeros.py $detDir/ $detDir/
