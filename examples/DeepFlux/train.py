@@ -57,7 +57,7 @@ def dil_conv_relu(bottom, nout, ks=3, stride=1, pad=1, dil=1):
     """
     conv = caffe.layers.Convolution(bottom, kernel_size=ks, stride=stride, num_output=nout, pad=pad, dilation=dil,
         weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
     return conv, caffe.layers.ReLU(conv, in_place=True)
 
 def write_net(dataset):
@@ -101,38 +101,44 @@ def write_net(dataset):
 
     net.sdconv = caffe.layers.Convolution(net.dconcat, kernel_size=1, stride=1, num_output=256, pad=0,
         weight_filler={"type": "gaussian", "std": 0.01},bias_filler={"type": "constant"},
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
     net.sdrelu = caffe.layers.ReLU(net.sdconv, in_place=True)
     net.upsd = caffe.layers.Deconvolution(net.sdrelu,convolution_param=dict(num_output=256, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
     net.sdcrop = crop(net.upsd, net.relu3_3)
 
     net.sconv5 = caffe.layers.Convolution(net.relu5_3, kernel_size=1, stride=1, num_output=256, pad=0,
         weight_filler={"type": "gaussian", "std": 0.01},bias_filler={"type": "constant"},
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
     net.srelu5 = caffe.layers.ReLU(net.sconv5, in_place=True)
     net.ups5 = caffe.layers.Deconvolution(net.srelu5,convolution_param=dict(num_output=256, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
     net.scrop5 = crop(net.ups5, net.relu3_3)
 
     net.sconv4 = caffe.layers.Convolution(net.relu4_3, kernel_size=1, stride=1, num_output=256, pad=0,
         weight_filler={"type": "gaussian", "std": 0.001},bias_filler={"type": "constant"},
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
     net.srelu4 = caffe.layers.ReLU(net.sconv4, in_place=True)
     net.ups4 = caffe.layers.Deconvolution(net.srelu4,convolution_param=dict(num_output=256, kernel_size=4, stride=2, pad=1, bias_term=False), param=[dict(lr_mult=0)])
     net.scrop4 = crop(net.ups4, net.relu3_3)
 
     net.sconv3 = caffe.layers.Convolution(net.relu3_3, kernel_size=1, stride=1, num_output=256, pad=0,
         weight_filler={"type": "gaussian", "std": 0.0001},bias_filler={"type": "constant"},
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
     net.srelu3 = caffe.layers.ReLU(net.sconv3, in_place=True)
 
     bottom_layers = [net.srelu3, net.scrop4, net.scrop5, net.sdcrop]
     net.sconcat = caffe.layers.Concat(*bottom_layers, concat_param=dict(concat_dim=1))
 
-    net.fconv1, net.frelu1 = conv_relu(net.sconcat, 512, ks=1, pad=0)
-    net.fconv2, net.frelu2 = conv_relu(net.frelu1, 512, ks=1, pad=0)
+    net.fconv1 = caffe.layers.Convolution(net.sconcat, kernel_size=1, stride=1, num_output=512, pad=0,
+        weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+    net.frelu1 = caffe.layers.ReLU(net.fconv1, in_place=True)
+    net.fconv2 = caffe.layers.Convolution(net.frelu1, kernel_size=1, stride=1, num_output=512, pad=0,
+        weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+    net.frelu2 = caffe.layers.ReLU(net.fconv2, in_place=True)
     net.fconv3 = caffe.layers.Convolution(net.frelu2, kernel_size=1, stride=1, num_output=2, pad=0,
         weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+        param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
 
     net.fup = caffe.layers.Deconvolution(net.fconv3,convolution_param=dict(num_output=2, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
     net.fcrop = crop(net.fup, net.image)
@@ -275,9 +281,9 @@ if __name__ == '__main__':
         os.makedirs('snapshot_1e-5')
 
     write_net(args.dataset)
-    write_solver(1e-4, 80000, 'snapshot_1e-4/'+args.dataset)
+    write_solver(1e-5, 80000, 'snapshot_1e-4/'+args.dataset)
     train(args.initmodel, args.gpu)
 
-    write_solver(1e-5, 40000, 'snapshot_1e-5/'+args.dataset)
+    write_solver(1e-6, 40000, 'snapshot_1e-5/'+args.dataset)
     train('snapshot_1e-4/'+args.dataset+'_iter_80000.caffemodel', args.gpu)
     write_deploy()
