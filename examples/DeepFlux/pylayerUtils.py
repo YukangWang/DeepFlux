@@ -95,7 +95,7 @@ class DataLayer(caffe.Layer):
         height = rev.shape[0]
         width = rev.shape[1]
         rev = (rev > 0).astype(np.uint8)
-        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.cv.CV_DIST_L2, cv2.cv.CV_DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
+        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.DIST_L2, cv2.DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
 
         index = np.copy(labels)
         index[rev > 0] = 0
@@ -145,7 +145,7 @@ class DataLayer(caffe.Layer):
         height = rev.shape[0]
         width = rev.shape[1]
         rev = (rev > 0).astype(np.uint8)
-        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.cv.CV_DIST_L2, cv2.cv.CV_DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
+        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.DIST_L2, cv2.DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
 
         index = np.copy(labels)
         index[rev > 0] = 0
@@ -195,7 +195,7 @@ class DataLayer(caffe.Layer):
         height = rev.shape[0]
         width = rev.shape[1]
         rev = (rev > 0).astype(np.uint8)
-        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.cv.CV_DIST_L2, cv2.cv.CV_DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
+        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.DIST_L2, cv2.DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
 
         index = np.copy(labels)
         index[rev > 0] = 0
@@ -245,7 +245,7 @@ class DataLayer(caffe.Layer):
         height = rev.shape[0]
         width = rev.shape[1]
         rev = (rev > 0).astype(np.uint8)
-        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.cv.CV_DIST_L2, cv2.cv.CV_DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
+        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.DIST_L2, cv2.DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
 
         index = np.copy(labels)
         index[rev > 0] = 0
@@ -295,7 +295,7 @@ class DataLayer(caffe.Layer):
         height = rev.shape[0]
         width = rev.shape[1]
         rev = (rev > 0).astype(np.uint8)
-        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.cv.CV_DIST_L2, cv2.cv.CV_DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
+        dst, labels = cv2.distanceTransformWithLabels(rev, cv2.DIST_L2, cv2.DIST_MASK_PRECISE, labelType=cv2.DIST_LABEL_PIXEL)
 
         index = np.copy(labels)
         index[rev > 0] = 0
