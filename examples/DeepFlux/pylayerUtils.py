@@ -122,7 +122,7 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        skl = (skl>0).astype(np.float32)
+        skl = (skeleton > 0).astype(np.float32)
         skl = skl[np.newaxis, ...]
 
         return image, flux, skl
@@ -172,7 +172,7 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        skl = (skl>0).astype(np.float32)
+        skl = (skeleton > 0).astype(np.float32)
         skl = skl[np.newaxis, ...]
 
         return image, flux, skl
@@ -222,7 +222,7 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        skl = (skl>0).astype(np.float32)
+        skl = (skeleton > 0).astype(np.float32)
         skl = skl[np.newaxis, ...]
 
         return image, flux, skl
@@ -272,7 +272,7 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        skl = (skl>0).astype(np.float32)
+        skl = (skeleton > 0).astype(np.float32)
         skl = skl[np.newaxis, ...]
 
         return image, flux, skl
@@ -322,7 +322,7 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        skl = (skl>0).astype(np.float32)
+        skl = (skeleton > 0).astype(np.float32)
         skl = skl[np.newaxis, ...]
 
         return image, flux, skl
