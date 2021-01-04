@@ -6,7 +6,7 @@ detDir='det'
 # configs for network inference
 deploy='../deploy.prototxt'
 model=${3}
-gpu='1'
+gpu='0'
 
 # params for post-processing
 lambda='0.4'
@@ -29,7 +29,7 @@ else
 fi
 
 # inference
-python ../inference.py $deploy $model $gpu $imageDir/ $thr $dks $eks $detDir/
+python ../inference.py $deploy $model $gpu $imageDir/ $lambda $dks $eks $detDir/
 
 # uncomment for the all-zeros case
 # python avoid_all_zeros.py $detDir/ $detDir/

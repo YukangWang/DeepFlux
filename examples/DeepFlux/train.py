@@ -60,14 +60,14 @@ def dil_conv_relu(bottom, nout, ks=3, stride=1, pad=1, dil=1):
         param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
     return conv, caffe.layers.ReLU(conv, in_place=True)
 
-def write_net(dataset):
+def write_net(dataset, e2e):
     """
     Generate train.prototxt and test.prototxt.
     Dataset: 'sklarge' for SK-LARGE; 'sk506' for SK506; 'whsymmax' for wh-SYMMAX; 'sympascal' for SYM-PASCAL; 'symmax300' for SYMMAX300.
     """
     net = caffe.NetSpec()
     datalayer_params = dict(data_dir='../../data/', dataset=dataset, seed=123, mean=(103.939, 116.779, 123.68))
-    net.image, net.flux, net.dilmask = caffe.layers.Python(module='pylayerUtils', layer='DataLayer', ntop=3, param_str=str(datalayer_params))
+    net.image, net.flux, net.skl = caffe.layers.Python(module='pylayerUtils', layer='DataLayer', ntop=3, param_str=str(datalayer_params))
 
     net.conv1_1, net.relu1_1 = conv_relu(net.image, 64, pad=35)
     net.conv1_2, net.relu1_2 = conv_relu(net.relu1_1, 64)
@@ -142,14 +142,31 @@ def write_net(dataset):
 
     net.fup = caffe.layers.Deconvolution(net.fconv3,convolution_param=dict(num_output=2, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
     net.fcrop = crop(net.fup, net.image)
-    net.loss = caffe.layers.Python(net.fcrop, net.flux, net.dilmask, module='pylayerUtils', layer='WeightedEuclideanLossLayer', loss_weight=1)
+    net.loss = caffe.layers.Python(net.fcrop, net.flux, module='pylayerUtils', layer='WeightedEuclideanLossLayer', loss_weight=1)
+
+    if e2e:
+        net.e2econv1 = caffe.layers.Convolution(net.fconv3, kernel_size=3, stride=1, num_output=64, pad=1,
+            weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+            param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+        net.e2erelu1 = caffe.layers.ReLU(net.e2econv1, in_place=True)
+        net.e2econv2 = caffe.layers.Convolution(net.e2erelu1, kernel_size=3, stride=1, num_output=64, pad=1,
+            weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+            param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+        net.e2erelu2 = caffe.layers.ReLU(net.e2econv2, in_place=True)
+        net.e2econv3 = caffe.layers.Convolution(net.e2erelu2, kernel_size=3, stride=1, num_output=1, pad=1,
+            weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+            param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+
+        net.e2eup = caffe.layers.Deconvolution(net.e2econv3,convolution_param=dict(num_output=1, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
+        net.e2ecrop = crop(net.e2eup, net.image)
+        net.sceloss = caffe.layers.Python(net.e2ecrop, net.skl, module='pylayerUtils', layer='WeightedSigmoidCrossEntropyLossLayer', loss_weight=1)
 
     with open('train.prototxt', 'w') as f:
         f.write(str(net.to_proto()))
     with open('test.prototxt', 'w') as f:
         f.write(str(net.to_proto()))
 
-def write_deploy():
+def write_deploy(e2e):
     """
     Generate deploy.prototxt.
     """
@@ -224,6 +241,22 @@ def write_deploy():
     net.fup = caffe.layers.Deconvolution(net.fconv3,convolution_param=dict(num_output=2, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
     net.fcrop = crop(net.fup, net.data)
 
+    if e2e:
+        net.e2econv1 = caffe.layers.Convolution(net.fconv3, kernel_size=3, stride=1, num_output=64, pad=1,
+            weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+            param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+        net.e2erelu1 = caffe.layers.ReLU(net.e2econv1, in_place=True)
+        net.e2econv2 = caffe.layers.Convolution(net.e2erelu1, kernel_size=3, stride=1, num_output=64, pad=1,
+            weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+            param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+        net.e2erelu2 = caffe.layers.ReLU(net.e2econv2, in_place=True)
+        net.e2econv3 = caffe.layers.Convolution(net.e2erelu2, kernel_size=3, stride=1, num_output=1, pad=1,
+            weight_filler={"type": "xavier"},bias_filler={"type": "constant"},
+            param=[dict(lr_mult=10, decay_mult=1), dict(lr_mult=20, decay_mult=0)])
+
+        net.e2eup = caffe.layers.Deconvolution(net.e2econv3,convolution_param=dict(num_output=1, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
+        net.e2ecrop = crop(net.e2eup, net.image)
+
     with open('deploy.prototxt', 'w') as f:
         f.write(str(net.to_proto()))
 
@@ -273,6 +306,7 @@ if __name__ == '__main__':
     parser.add_argument("--dataset", required=True, help="dataset name.")
     parser.add_argument("--initmodel", help="Init caffemodel.")
     parser.add_argument("--gpu", required=True, type=int, help="Device ids.")
+    parser.add_argument("--e2e", dest="e2e", default=False, action="store_true")
     args = parser.parse_args()
 
     if not os.path.isdir('snapshot_1e-4'):
@@ -280,10 +314,10 @@ if __name__ == '__main__':
     if not os.path.isdir('snapshot_1e-5'):
         os.makedirs('snapshot_1e-5')
 
-    write_net(args.dataset)
+    write_net(args.dataset, args.e2e)
     write_solver(1e-5, 80000, 'snapshot_1e-4/'+args.dataset)
     train(args.initmodel, args.gpu)
 
     write_solver(1e-6, 40000, 'snapshot_1e-5/'+args.dataset)
     train('snapshot_1e-4/'+args.dataset+'_iter_80000.caffemodel', args.gpu)
-    write_deploy()
+    write_deploy(args.e2e)

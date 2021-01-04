@@ -122,10 +122,10 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        dilmask = (dilmask>0).astype(np.float32)
-        dilmask = dilmask[np.newaxis, ...]
+        skl = (skl>0).astype(np.float32)
+        skl = skl[np.newaxis, ...]
 
-        return image, flux, dilmask
+        return image, flux, skl
 
     def loadsk506(self, imgidx, gtidx):
         # load image and skeleton
@@ -172,10 +172,10 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        dilmask = (dilmask>0).astype(np.float32)
-        dilmask = dilmask[np.newaxis, ...]
+        skl = (skl>0).astype(np.float32)
+        skl = skl[np.newaxis, ...]
 
-        return image, flux, dilmask
+        return image, flux, skl
 
     def loadwhsymmax(self, imgidx, gtidx):
         # load image and skeleton
@@ -222,10 +222,10 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        dilmask = (dilmask>0).astype(np.float32)
-        dilmask = dilmask[np.newaxis, ...]
+        skl = (skl>0).astype(np.float32)
+        skl = skl[np.newaxis, ...]
 
-        return image, flux, dilmask
+        return image, flux, skl
 
     def loadsympascal(self, imgidx, gtidx):
         # load image and skeleton
@@ -272,10 +272,10 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        dilmask = (dilmask>0).astype(np.float32)
-        dilmask = dilmask[np.newaxis, ...]
+        skl = (skl>0).astype(np.float32)
+        skl = skl[np.newaxis, ...]
 
-        return image, flux, dilmask
+        return image, flux, skl
 
     def loadsymmax300(self, imgidx, gtidx):
         # load image and skeleton
@@ -322,16 +322,16 @@ class DataLayer(caffe.Layer):
 
         flux = -1*np.stack((direction[0], direction[1]))
 
-        dilmask = (dilmask>0).astype(np.float32)
-        dilmask = dilmask[np.newaxis, ...]
+        skl = (skl>0).astype(np.float32)
+        skl = skl[np.newaxis, ...]
 
-        return image, flux, dilmask
+        return image, flux, skl
 
 class WeightedEuclideanLossLayer(caffe.Layer):
 
     def setup(self, bottom, top):
         # check inputs
-        if len(bottom) != 3:
+        if len(bottom) != 2:
             raise Exception("Need three inputs to compute loss.")
 
     def reshape(self, bottom, top):
@@ -351,8 +351,9 @@ class WeightedEuclideanLossLayer(caffe.Layer):
         self.distL1 = bottom[0].data - bottom[1].data
         self.distL2 = self.distL1**2
         # the amount of positive and negative pixels
-        regionPos = (bottom[2].data>0)
-        regionNeg = (bottom[2].data==0)
+        mask = np.logical_or((bottom[1].data[0][0]!=0), (bottom[1].data[0][1]!=0)).astype(np.float32)
+        regionPos = (mask>0)
+        regionNeg = (mask==0)
         sumPos = np.sum(regionPos)
         sumNeg = np.sum(regionNeg)
         # balanced weight for positive and negative pixels
@@ -366,4 +367,41 @@ class WeightedEuclideanLossLayer(caffe.Layer):
     def backward(self, top, propagate_down, bottom):
         bottom[0].diff[...] = self.distL1*(self.weightPos + self.weightNeg) / bottom[0].num
         bottom[1].diff[...] = 0
-        bottom[2].diff[...] = 0
+
+class WeightedSigmoidCrossEntropyLossLayer(caffe.Layer):
+
+    def setup(self, bottom, top):
+        # check inputs
+        if len(bottom) != 2:
+            raise Exception("Need two inputs to compute loss.")
+
+    def reshape(self, bottom, top):
+        # check input dimensions match
+        if bottom[0].count != bottom[1].count:
+            raise Exception("Inputs must have the same dimension.")
+        # define diff and weight maps for backpropagation
+        self.sce = np.zeros_like(bottom[0].data, dtype=np.float32)
+        self.diff = np.zeros_like(bottom[0].data, dtype=np.float32)
+        self.weightPos = np.zeros_like(bottom[0].data, dtype=np.float32)
+        self.weightNeg = np.zeros_like(bottom[0].data, dtype=np.float32)
+        # loss output is scalar
+        top[0].reshape(1)
+
+    def forward(self, bottom, top):
+        # compute loss and diff
+        self.sce = -1*(bottom[0].data*(bottom[1].data-(bottom[0].data>=0))-np.log2(1+np.exp(bottom[0].data-2*bottom[0].data*(bottom[0].data>=0))))
+        self.diff = 1.0/(1+np.exp(-1*bottom[0].data))-bottom[1].data
+        # the amount of positive and negative pixels
+        regionPos = (bottom[1].data>0)
+        regionNeg = (bottom[1].data==0)
+        sumPos = np.sum(regionPos)
+        sumNeg = np.sum(regionNeg)
+        # balanced weight for positive and negative pixels
+        self.weightPos = sumNeg/float(sumPos+sumNeg)*regionPos
+        self.weightNeg = sumPos/float(sumPos+sumNeg)*regionNeg
+        # total loss
+        top[0].data[...] = np.sum(self.sce*(self.weightPos + self.weightNeg)) / bottom[0].num / np.sum(self.weightPos + self.weightNeg)
+
+    def backward(self, top, propagate_down, bottom):
+        bottom[0].diff[...] = self.diff*(self.weightPos + self.weightNeg) / bottom[0].num
+        bottom[1].diff[...] = 0

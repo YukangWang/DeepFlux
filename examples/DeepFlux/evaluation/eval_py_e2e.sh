@@ -1,5 +1,4 @@
 # dir setting
-buildDir='../../../build/examples/DeepFlux'
 imageDir=${1}
 gtDir=${2}
 detDir='det'
@@ -8,11 +7,6 @@ detDir='det'
 deploy='../deploy.prototxt'
 model=${3}
 gpu='0'
-
-# params for post-processing
-lambda='0.4'
-dks='7' # dks=2*k1+1
-eks='9' # eks=2*k2+1
 
 # init
 if [ -d $detDir ]
@@ -30,7 +24,7 @@ else
 fi
 
 # inference
-$buildDir/inference.bin $deploy $model $gpu $imageDir/ $lambda $dks $eks $detDir/
+python ../inference.py $deploy $model $gpu $imageDir/ $detDir/
 
 # uncomment for the all-zeros case
 # python avoid_all_zeros.py $detDir/ $detDir/
