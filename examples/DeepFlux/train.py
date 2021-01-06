@@ -256,6 +256,8 @@ def write_deploy(e2e):
 
         net.e2eup = caffe.layers.Deconvolution(net.e2econv3,convolution_param=dict(num_output=1, kernel_size=8, stride=4, pad=2, bias_term=False), param=[dict(lr_mult=0)])
         net.e2ecrop = crop(net.e2eup, net.image)
+        net.e2ecrop = caffe.layers.Sigmoid(net.e2ecrop)
+
 
     with open('deploy.prototxt', 'w') as f:
         f.write(str(net.to_proto()))
