@@ -24,7 +24,7 @@ else
 fi
 
 # inference
-python ../inference.py $deploy $model $gpu $imageDir/ $detDir/
+python ../inference_e2e.py $deploy $model $gpu $imageDir/ $detDir/
 
 # uncomment for the all-zeros case
 # python avoid_all_zeros.py $detDir/ $detDir/
