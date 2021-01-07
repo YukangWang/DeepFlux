@@ -71,6 +71,8 @@ python train.py --gpu [your_gpu_id] --dataset sklarge --initmodel ../../models/V
 
 ```
 
+For training an end-to-end version of DeepFlux, adding the `--e2e` option.
+
 #### 4. Evaluation scripts
 
 ```bash
@@ -81,6 +83,8 @@ cd evaluation/
 ./eval_cpp.sh ../../data/SK-LARGE/images/test ../../data/SK-LARGE/groundTruth/test ../../models/sklarge_iter_40000.caffemodel
 # inference with Python
 ./eval_py.sh ../../data/SK-LARGE/images/test ../../data/SK-LARGE/groundTruth/test ../../models/sklarge_iter_40000.caffemodel
+# inference with Python (end-to-end version)
+./eval_py_e2e.sh ../../data/SK-LARGE/images/test ../../data/SK-LARGE/groundTruth/test ../../models/sklarge_iter_40000.caffemodel
 
 ```
 
@@ -92,6 +96,7 @@ cd evaluation/
 |:-------------:|:-------------:|:-----:|
 | VGG-16 | 0.732 | CVPR submission [[Google drive]](https://drive.google.com/file/d/1dYtxLqNgNRCTVnkL_2wzIvjWuRk363FM/view?usp=sharing) |
 | VGG-16 | 0.735 | different_lr [[Google drive]](https://drive.google.com/file/d/1nTYWYTdmcjrW74p-B9Hr-Qm9HvYgdI1x/view?usp=sharing) |
+| VGG-16 | 0.737 | end-to-end [[Google drive]](https://drive.google.com/file/d/1YV9QGbcf68dttbzAnB0qZZU8P6KygmtX/view?usp=sharing) |
 <!-- | ResNet-101 | 0.752 | different_lr [[Available soon]]() | -->
 
 #### SYM-PASCAL
@@ -100,8 +105,9 @@ cd evaluation/
 |:-------------:|:-------------:|:-----:|
 | VGG-16 | 0.502 | CVPR submission [[Google drive]](https://drive.google.com/file/d/1jtWk_7Vt-Gb8IrW3eaR7EuW8_uitgKE1/view?usp=sharing) |
 | VGG-16 | 0.558 | different_lr [[Google drive]](https://drive.google.com/file/d/1DCreuYWZ32SXYnJo9hgjtxzVJB2uICgI/view?usp=sharing) |
+| VGG-16 | 0.569 | end-to-end [[Google drive]](https://drive.google.com/file/d/1Rz6FLqf4c3k-AoHDHuK-DsvIdNwREw95/view?usp=sharing) |
 <!-- | ResNet-101 | 0.584 | different_lr [[Available soon]]() | -->
 
 >*different_lr means different learning rates for backbone and additional layers
 
->*lambda=0.4, k1=3, k2=4 for all models
+>*lambda=0.4, k1=3, k2=4 for all models with post-processing
